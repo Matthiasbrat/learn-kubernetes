@@ -1,0 +1,352 @@
+[
+  {
+    "category": "Getting Started",
+    "order": 1,
+    "topics": [
+      {
+        "question": "What is Kubernetes?",
+        "answer": "Kubernetes is a portable, extensible, open source platform for managing containerized workloads and services, that facilitates both declarative configuration and automation. The name Kubernetes originates from Greek, meaning helmsman or pilot. K8s as an abbreviation results from counting the eight letters between the \"K\" and the \"s\". Google open-sourced the Kubernetes project in 2014, combining over 15 years of Google's experience running production workloads at scale with best-of-breed ideas and practices from the community.",
+        "details": "Kubernetes is not a mere orchestration system. In fact, it eliminates the need for orchestration. The technical definition of orchestration is execution of a defined workflow: first do A, then B, then C. In contrast, Kubernetes comprises a set of independent, composable control processes that continuously drive the current state towards the provided desired state. It shouldn't matter how you get from A to C. Centralized control is also not required. This results in a system that is easier to use and more powerful, robust, resilient, and extensible.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/"
+      },
+      {
+        "question": "What are the main components of a Kubernetes cluster?",
+        "answer": "A Kubernetes cluster consists of a control plane and one or more worker nodes. The control plane manages the overall state of the cluster, while nodes run your actual workloads.",
+        "details": "**Control Plane Components:**\n- **kube-apiserver**: The core component server that exposes the Kubernetes HTTP API\n- **etcd**: Consistent and highly-available key value store for all API server data\n- **kube-scheduler**: Looks for Pods not yet bound to a node, and assigns each Pod to a suitable node\n- **kube-controller-manager**: Runs controllers to implement Kubernetes API behavior\n- **cloud-controller-manager** (optional): Integrates with underlying cloud provider(s)\n\n**Node Components:**\n- **kubelet**: Ensures that Pods are running, including their containers\n- **kube-proxy** (optional): Maintains network rules on nodes to implement Services\n- **Container runtime**: Software responsible for running containers\n\n**Addons:**\n- DNS for cluster-wide DNS resolution\n- Web UI (Dashboard) for cluster management\n- Container Resource Monitoring\n- Cluster-level Logging",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/components/"
+      },
+      {
+        "question": "What are Kubernetes objects?",
+        "answer": "Kubernetes objects are persistent entities in the Kubernetes system that represent the state of your cluster. They describe what containerized applications are running (and on which nodes), the resources available to those applications, and the policies around how those applications behave.",
+        "details": "A Kubernetes object is a \"record of intent\" — once you create the object, the Kubernetes system will constantly work to ensure that the object exists. By creating an object, you're effectively telling the Kubernetes system what you want your cluster's workload to look like; this is your cluster's desired state.\n\nEvery Kubernetes object includes two nested object fields:\n- **spec**: You set this when you create the object, describing the characteristics you want (desired state)\n- **status**: Describes the current state, supplied and updated by the Kubernetes system\n\nThe control plane continually manages every object's actual state to match the desired state you supplied.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/"
+      },
+      {
+        "question": "What fields are required when creating a Kubernetes object?",
+        "answer": "When you create an object in Kubernetes, you must provide the object spec that describes its desired state, as well as some basic information about the object.",
+        "details": "Required fields in a manifest file:\n- **apiVersion**: Which version of the Kubernetes API you're using\n- **kind**: What kind of object you want to create\n- **metadata**: Data that helps uniquely identify the object (name, UID, namespace)\n- **spec**: The desired state of the object\n\nExample:\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: nginx-deployment\nspec:\n  selector:\n    matchLabels:\n      app: nginx\n  replicas: 2\n  template:\n    metadata:\n      labels:\n        app: nginx\n    spec:\n      containers:\n      - name: nginx\n        image: nginx:1.14.2\n        ports:\n        - containerPort: 80\n```",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/"
+      },
+      {
+        "question": "What are the different ways to manage Kubernetes objects?",
+        "answer": "There are three management approaches: imperative commands (quick, no config files), imperative object configuration (using kubectl create/replace with files), and declarative configuration (using kubectl apply with files).",
+        "details": "**Warning:** A Kubernetes object should be managed using only one technique. Mixing techniques for the same object results in undefined behavior.\n\n### Imperative commands\nOperate directly on live objects. Quick but no history.\n```bash\nkubectl create deployment nginx --image nginx\nkubectl delete deployment nginx\n```\n\n### Imperative object configuration\nSpecify operation + file. Full object definition required.\n```bash\nkubectl create -f nginx.yaml\nkubectl replace -f nginx.yaml\nkubectl delete -f nginx.yaml\n```\n\n### Declarative object configuration\nApply changes from files. Kubernetes figures out what to create/update/delete.\n```bash\nkubectl apply -f configs/\nkubectl apply -R -f configs/  # recursive\n```\n\n**Recommendation:** Use declarative configuration for production workloads — it provides version control, code review, and audit trails.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/object-management/"
+      }
+    ]
+  },
+  {
+    "category": "Core Concepts",
+    "order": 2,
+    "topics": [
+      {
+        "question": "How do object names and IDs work?",
+        "answer": "Each object in your cluster has a Name that is unique for that type of resource. Every Kubernetes object also has a UID that is unique across your whole cluster.",
+        "details": "For example, you can only have one Pod named myapp-1234 within the same namespace, but you can have one Pod and one Deployment that are each named myapp-1234.\n\n**Names** are client-provided strings that refer to an object in a resource URL. Names must be unique across all API versions of the same resource.\n\n**DNS Subdomain Names** (most common): Must contain no more than 253 characters, contain only lowercase alphanumeric characters, '-' or '.', start and end with an alphanumeric character.\n\n**UIDs** are Kubernetes system-generated strings to uniquely identify objects, standardized as ISO/IEC 9834-8.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/names/"
+      },
+      {
+        "question": "What are labels and how do I use them?",
+        "answer": "Labels are key/value pairs that are attached to objects. They allow for efficient queries and watches and are ideal for use in UIs and CLIs. Each key must be unique for a given object.",
+        "details": "**Example labels:**\n- `release: stable` or `release: canary`\n- `environment: dev`, `environment: qa`, `environment: production`\n- `tier: frontend`, `tier: backend`, `tier: cache`\n\n**Label syntax:**\n- The name segment is required and must be 63 characters or less\n- The prefix is optional (must be a DNS subdomain if specified)\n- The `kubernetes.io/` and `k8s.io/` prefixes are reserved for Kubernetes core components\n\n**Selectors** allow you to identify a set of objects. Two types:\n- **Equality-based**: `environment = production`, `tier != frontend`\n- **Set-based**: `environment in (production, qa)`, `tier notin (frontend, backend)`\n\n**kubectl examples:**\n```bash\nkubectl get pods -l environment=production,tier=frontend\nkubectl get pods -l 'environment in (production, qa)'\nkubectl label pods -l app=nginx tier=fe\n```",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/labels/"
+      },
+      {
+        "question": "What are namespaces and when should I use them?",
+        "answer": "Namespaces provide a mechanism for isolating groups of resources within a single cluster. Names of resources need to be unique within a namespace, but not across namespaces.",
+        "details": "**Key points:**\n- For clusters with a few to tens of users, you should not need namespaces at all\n- Namespaces cannot be nested inside one another\n- Each Kubernetes resource can only be in one namespace\n- Namespaces are a way to divide cluster resources between multiple users (via resource quota)\n- Namespace-based scoping is only for namespaced objects (Deployments, Services) not cluster-wide objects (StorageClass, Nodes, PersistentVolumes)\n\n**When NOT to use namespaces:**\nIt is not necessary to use multiple namespaces to separate slightly different resources, such as different versions of the same software — use labels to distinguish resources within the same namespace instead.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
+      },
+      {
+        "question": "What are annotations and how are they different from labels?",
+        "answer": "Annotations are used to attach arbitrary non-identifying metadata to objects. Unlike labels, annotations are not used to identify and select objects.",
+        "details": "The metadata in an annotation can be small or large, structured or unstructured, and can include characters not permitted by labels.\n\n**Use annotations to record:**\n- Build, release, or image information\n- Pointers to logging, monitoring, analytics, or audit repositories\n- Client library or tool information for debugging\n- User or tool/system provenance information\n- Lightweight rollout tool metadata\n- Phone/pager numbers of responsible persons\n- Directives from the end-user to modify behavior",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/annotations/"
+      },
+      {
+        "question": "What are finalizers?",
+        "answer": "Finalizers are namespaced keys that tell Kubernetes to wait until specific conditions are met before it fully deletes resources marked for deletion. Finalizers alert controllers to clean up resources the deleted object owned.",
+        "details": "**How finalizers work:**\n1. When you delete an object with finalizers, the API server sets `metadata.deletionTimestamp`\n2. The object enters a terminating state and returns HTTP 202 (Accepted)\n3. The object remains visible until the control plane completes the actions defined by finalizers\n4. After actions complete, the controller removes the finalizers\n5. When `metadata.finalizers` is empty, Kubernetes deletes the object\n\n**Common example:** `kubernetes.io/pv-protection` prevents accidental deletion of PersistentVolumes that are in use. The volume enters Terminating status but can't be deleted until the Pod stops using it.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/"
+      },
+      {
+        "question": "How do owner references work?",
+        "answer": "Owner references help different parts of Kubernetes avoid interfering with objects they don't control. Dependent objects have a metadata.ownerReferences field that references their owner object.",
+        "details": "A valid owner reference consists of the object name and a UID within the same namespace as the dependent object.\n\nKubernetes automatically sets owner references for objects created by controllers. For example, when a ReplicaSet creates Pods, Kubernetes automatically sets owner references on those Pods pointing to the ReplicaSet.\n\n**Cascading deletion:**\n- **Foreground deletion**: Owner enters \"deletion in progress\" state, dependents with `blockOwnerDeletion=true` are deleted first\n- **Background deletion**: Owner is deleted immediately, garbage collector cleans up dependents\n- **Orphan deletion**: Dependents are left alone when owner is deleted",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/owners-dependents/"
+      },
+      {
+        "question": "What are field selectors?",
+        "answer": "Field selectors let you select Kubernetes objects based on the value of one or more resource fields, such as status.phase, metadata.name, or metadata.namespace.",
+        "details": "**Basic usage:**\n```bash\nkubectl get pods --field-selector status.phase=Running\n```\n\n**Supported fields vary by resource type.** All resources support:\n- `metadata.name`\n- `metadata.namespace`\n\n**Pod-specific fields:**\n- `spec.nodeName`\n- `spec.restartPolicy`\n- `spec.schedulerName`\n- `spec.serviceAccountName`\n- `spec.hostNetwork`\n- `status.phase`\n- `status.podIP`\n- `status.nominatedNodeName`\n\n**Operators:**\n- `=` and `==` (equality)\n- `!=` (inequality)\n\n**Chaining selectors:**\n```bash\nkubectl get pods --field-selector=status.phase!=Running,spec.restartPolicy=Always\n```\n\n**Combining with label selectors:**\n```bash\nkubectl get pods -l app=nginx --field-selector status.phase=Running\n```\n\nUsing unsupported field selectors produces an error.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/"
+      },
+      {
+        "question": "What are the recommended labels for Kubernetes applications?",
+        "answer": "Kubernetes recommends a set of common labels with the app.kubernetes.io prefix to describe applications in a standardized way that tools can query and understand.",
+        "details": "**Recommended labels:**\n\n| Label | Description | Example |\n|-------|-------------|--------|\n| `app.kubernetes.io/name` | The name of the application | `mysql` |\n| `app.kubernetes.io/instance` | Unique instance identifier | `mysql-abcxyz` |\n| `app.kubernetes.io/version` | Current version | `5.7.21` |\n| `app.kubernetes.io/component` | Component within architecture | `database` |\n| `app.kubernetes.io/part-of` | Higher-level application | `wordpress` |\n| `app.kubernetes.io/managed-by` | Tool managing the app | `helm` |\n\n**Example deployment:**\n```yaml\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  labels:\n    app.kubernetes.io/name: mysql\n    app.kubernetes.io/instance: mysql-prod\n    app.kubernetes.io/version: \"5.7.21\"\n    app.kubernetes.io/component: database\n    app.kubernetes.io/part-of: wordpress\n    app.kubernetes.io/managed-by: helm\n```\n\nThese labels enable tooling to work together and provide consistent metadata across your cluster.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/"
+      }
+    ]
+  },
+  {
+    "category": "Architecture",
+    "order": 3,
+    "topics": [
+      {
+        "question": "How does the Kubernetes API work?",
+        "answer": "The core of Kubernetes' control plane is the API server. The API server exposes an HTTP API that lets end users, different parts of your cluster, and external components communicate with one another.",
+        "details": "The Kubernetes API lets you query and manipulate the state of API objects. Most operations can be performed through kubectl or other tools like kubeadm, which use the API. You can also access the API directly using REST calls.\n\n**Key points:**\n- API resources are distinguished by their API group, resource type, namespace (for namespaced resources), and name\n- Kubernetes stores the serialized state of objects by writing them into etcd\n- Kubernetes implements a Protobuf-based serialization format for intra-cluster communication\n- The Discovery API provides information about available Kubernetes APIs\n- The OpenAPI Document provides full schemas for all API endpoints",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/overview/kubernetes-api/"
+      },
+      {
+        "question": "What are nodes and how do they work?",
+        "answer": "Nodes are the worker machines in Kubernetes. A node may be a virtual or physical machine. Each node contains the services necessary to run Pods and is managed by the control plane.",
+        "details": "**Node components:**\n- **kubelet**: Primary node agent that watches for PodSpecs and ensures containers are running and healthy\n- **kube-proxy**: Network proxy that maintains network rules on nodes\n- **Container runtime**: Software responsible for running containers (containerd, CRI-O, etc.)\n\n**Node status includes:**\n- Addresses (hostname, internal IP, external IP)\n- Conditions (Ready, DiskPressure, MemoryPressure, PIDPressure, NetworkUnavailable)\n- Capacity and Allocatable resources\n- System info (kernel version, container runtime, kubelet version)",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/nodes/"
+      },
+      {
+        "question": "How does kubelet know which node it belongs to?",
+        "type": "investigation",
+        "answer": "The kubelet is a systemd service on the node itself, and it receives its node IP as a command-line argument. There's no magic \"scheduling\" of kubelets to nodes — the kubelet IS part of the node.",
+        "details": "### The Question\n\nThe Kubernetes documentation says:\n\n> \"Kubernetes checks that a kubelet has registered to the API server that matches the metadata.name field of the Node.\"\n\nBut how does the kubelet actually know which node it's running on?\n\n### The Discovery\n\nChecking the systemd service status reveals the answer:\n\n```bash\nsystemctl status kubelet | less | grep node\n```\n\nResults:\n- **node01**: `--node-ip=10.0.0.11`\n- **node02**: `--node-ip=10.0.0.12`\n\nThe node IP is passed as an argument to the kubelet binary!\n\n### How It Works\n\nThe IP is stored in `/etc/default/kubelet`:\n\n```bash\nKUBELET_EXTRA_ARGS=--node-ip=10.0.0.12\n```\n\nThe systemd service file loads this:\n\n```ini\n[Service]\nEnvironment=\"KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf\"\nEnvironment=\"KUBELET_CONFIG_ARGS=--config=/var/lib/kubelet/config.yaml\"\nEnvironmentFile=-/var/lib/kubelet/kubeadm-flags.env\nEnvironmentFile=-/etc/default/kubelet\nExecStart=\nExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_KUBEADM_ARGS $KUBELET_EXTRA_ARGS\n```\n\n### The Bootstrap Process\n\n1. `kubeadm init` or `kubeadm join` runs on the node\n2. kubeadm writes the node IP to `/etc/default/kubelet`\n3. kubeadm writes config to `/var/lib/kubelet/config.yaml`\n4. kubeadm starts the kubelet service\n5. Kubelet registers itself to the API server using its IP",
+        "source": "https://github.com/kubernetes/kubernetes/blob/db1da72beed99f1fcb2955c2624c7dd3531384ea/cmd/kubeadm/app/cmd/phases/init/kubelet.go#L61"
+      },
+      {
+        "question": "Why is kubelet a service but kube-proxy a container?",
+        "type": "investigation",
+        "answer": "Kubelet runs as a systemd service because it manages containers — it can't run inside one. Kube-proxy only configures network rules, so it CAN run as a privileged container in a DaemonSet.",
+        "details": "### The Question\n\nKubelet runs as a **systemd service** directly on the node, while kube-proxy runs as a **DaemonSet pod** (container). Why the difference?\n\n### Kubelet is tightly coupled to the node\n\nKubelet needs to:\n- Manage containers via the container runtime (containerd, CRI-O)\n- Mount volumes from the host filesystem\n- Configure networking at the host level\n- Report node status (CPU, memory, disk)\n- Manage cgroups for resource isolation\n\nIt essentially IS the node's Kubernetes agent — it can't run in a container because it manages containers.\n\n### Kube-proxy has more flexibility\n\nKube-proxy just needs to:\n- Configure iptables/IPVS rules for service routing\n- Watch the API server for Service/Endpoint changes\n\nThis CAN run in a container with appropriate privileges (NET_ADMIN capability, host network mode).\n\n### CNI dependency angle\n\nKube-proxy depends on the CNI (network plugin) being functional. Running it as a DaemonSet means:\n- It can be updated/restarted independently\n- Different CNI plugins might replace it entirely (some CNIs handle service routing themselves)\n- It's consistent with the \"everything is a pod\" philosophy",
+        "source": ""
+      },
+      {
+        "question": "How do nodes communicate with the control plane?",
+        "answer": "Kubernetes has a hub-and-spoke API pattern. All API usage from nodes terminates at the API server. The API server is configured to listen for remote connections on a secure HTTPS port with authentication and authorization enabled.",
+        "details": "**Node to Control Plane:**\n- Nodes connect to the API server on the secure HTTPS port\n- Nodes should use the cluster's public root certificate to connect securely\n- Pods that wish to connect to the API server can use a service account\n\n**Control Plane to Node:**\n- API server to kubelet connections are used for: fetching logs, attaching to running pods, port-forwarding\n- By default, the API server does not verify the kubelet's serving certificate (vulnerable to MITM)\n- Use the `--kubelet-certificate-authority` flag to provide a root certificate bundle to verify",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/control-plane-node-communication/"
+      },
+      {
+        "question": "What are controllers and how do they work?",
+        "answer": "Controllers are control loops that watch the state of your cluster through the API server and make changes attempting to move the current state towards the desired state.",
+        "details": "Each controller tries to move the current cluster state closer to the desired state. A controller tracks at least one Kubernetes resource type, and these objects have a spec field representing the desired state.\n\n**How controllers work:**\n1. Watch for changes to resources via the API server\n2. Compare current state to desired state (spec)\n3. Take action to reconcile differences\n4. Report status back\n\n**Built-in controllers:**\n- Deployment controller\n- Job controller\n- Node controller\n- ServiceAccount controller\n- And many more...\n\nLogically, each controller is a separate process, but to reduce complexity, they are all compiled into a single binary (kube-controller-manager) and run in a single process.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/controller/"
+      },
+      {
+        "question": "How is the controller manager architected internally?",
+        "type": "deep-dive",
+        "answer": "The controller manager is split across three key files: controllermanager.go (orchestration), core.go (controller definitions), and controller_utils.go (shared utilities). All controllers run as goroutines in a single process.",
+        "details": "### The Key Insight\n\nThe Kubernetes documentation states:\n\n> \"Logically, each controller is a separate process, but to reduce complexity, they are all compiled into a single binary and run in a single process.\"\n\n### The Three Key Files\n\n| File | Role |\n|------|------|\n| `controllermanager.go` | Entry point, orchestration, leader election |\n| `core.go` | Controller definitions and initialization |\n| `controller_utils.go` | Shared utilities and interfaces |\n\n### How They Work Together\n\n**1. controllermanager.go** (the orchestrator)\n- Creates the main `cobra.Command` for the binary\n- Sets up leader election (only one controller-manager is active at a time)\n- Initializes the `ControllerContext` with clients, informers, and config\n- Calls `StartControllers` to spin up all controllers\n- The Service Account Token Controller runs first (other controllers need its permissions)\n\n**2. core.go** (the controllers)\n- Defines each controller using `ControllerDescriptor` structs\n- Each descriptor has: name, aliases, and an init function\n- Examples: `newServiceLBControllerDescriptor`, `newNodeIpamControllerDescriptor`\n- Init functions actually create and start the controller goroutines\n\n**3. controller_utils.go** (the toolbox)\n- Provides interfaces that controllers implement:\n  - `PodControlInterface` → `RealPodControl` (create/delete pods)\n  - `RSControlInterface` → `RealRSControl` (manage ReplicaSets)\n  - `ControllerRevisionControlInterface` (for StatefulSets, DaemonSets)\n- Utility functions: `FilterActivePods`, `FilterTerminatingPods`, etc.\n- Expectation tracking (to avoid duplicate operations)",
+        "source": "https://github.com/kubernetes/kubernetes/blob/2331c028c2000f7d31efeeb405d8151a78a9de9c/cmd/kube-controller-manager/app/controllermanager.go"
+      },
+      {
+        "question": "How do informers and listers reduce API server load?",
+        "type": "deep-dive",
+        "answer": "Informers watch the API server and maintain a local cache. Listers read from this cache instead of hitting the API. This turns 5000 API calls/second into 1 watch connection with local reads.",
+        "details": "### The Problem\n\nIf every controller queried the API server every time it needed to check a resource's state, the API server would be overwhelmed.\n\n### The Solution: Event-Driven Caching\n\nKubernetes uses an **event loop architecture** with three key components:\n\n**1. Informers**\n- Establish a **watch** on the API server for specific resource types\n- Receive real-time notifications of changes (add, update, delete)\n- Update a **local cache** with the latest state\n- Trigger registered **event handlers** when resources change\n\n**2. Listers**\n- Provide **read-only access** to the local cache\n- Controllers call listers instead of the API server\n- Fast, in-memory lookups with no network overhead\n\n**3. Shared Informer Factory**\n- Creates and manages multiple informers\n- Ensures **one informer per resource type** is shared across controllers\n- Prevents duplicate watches that would waste API server resources\n\n### The Event Loop\n\n<image src=\"https://raw.githubusercontent.com/Matthiasbrat/kubernetes-docs-extract/refs/heads/main/img/informer.png\"></image>\n\n### Why This Matters\n\nWithout this architecture:\n- 50 controllers × 100 queries/second = 5000 API calls/second\n- With informers: 1 watch connection, local cache reads\n\nThis is how Kubernetes scales to thousands of nodes.",
+        "source": "https://kubernetes.io/docs/reference/using-api/api-concepts/#efficient-detection-of-changes"
+      },
+      {
+        "question": "What is the Container Runtime Interface (CRI)?",
+        "answer": "The CRI is a plugin interface which enables the kubelet to use a wide variety of container runtimes without having to recompile the cluster components.",
+        "details": "You need a working container runtime on each Node in your cluster so that the kubelet can launch Pods and their containers.\n\nThe Container Runtime Interface (CRI) is the main protocol for communication between the kubelet and Container Runtime. It defines the main gRPC protocol for communication between the node components kubelet and container runtime.\n\n**Supported container runtimes:**\n- containerd\n- CRI-O\n- Docker Engine (via cri-dockerd)\n- Mirantis Container Runtime",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/cri/"
+      },
+      {
+        "question": "How does garbage collection work?",
+        "answer": "Garbage collection is a collective term for the various mechanisms Kubernetes uses to clean up cluster resources like terminated pods, completed jobs, objects without owner references, and unused containers and images.",
+        "details": "**Resources cleaned up:**\n- Terminated pods\n- Completed Jobs\n- Objects without owner references\n- Unused containers and container images\n- Dynamically provisioned PersistentVolumes with Delete reclaim policy\n- Stale CertificateSigningRequests\n- Node Lease objects\n\n**Cascading deletion types:**\n- **Foreground**: Dependents deleted before owner\n- **Background**: Owner deleted immediately, dependents cleaned up later (default)\n\n**Image garbage collection:**\n- Triggered when disk usage exceeds HighThresholdPercent\n- Deletes images based on last usage time (oldest first)\n- Continues until disk usage reaches LowThresholdPercent",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/garbage-collection/"
+      },
+      {
+        "question": "What is cgroup v2 and why does it matter?",
+        "answer": "On Linux, control groups (cgroups) constrain resources allocated to processes. The kubelet and container runtime need to interface with cgroups to enforce resource management for pods and containers.",
+        "details": "**cgroup v2 improvements over v1:**\n- Single unified hierarchy design in API\n- Safer sub-tree delegation to containers\n- Newer features like Pressure Stall Information\n- Enhanced resource allocation management and isolation\n\n**Important:** The kubelet and container runtime must use the same cgroup driver and be configured identically. Two cgroup managers result in two views of available and in-use resources, which causes problems.\n\n**Available drivers:**\n- cgroupfs\n- systemd (recommended when systemd is the init system)",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/cgroups/"
+      },
+      {
+        "question": "How does systemd manage the kubelet service?",
+        "type": "deep-dive",
+        "answer": "Kubelet runs as a systemd service because it needs to start on boot, restart on crash, and have proper cgroup isolation. Systemd manages it via unit files that define how to run the daemon.",
+        "details": "### Context\n\nUnderstanding how kubelet runs as a service helps debug node issues.\n\n### SysVinit (the old way)\n\n- Services are **shell scripts** in `/etc/init.d/`\n- Uses **runlevels** (0-6) to control which services run\n- Sequential startup (slow boot times)\n- Simple but limited\n\n### Systemd (the modern way)\n\n- Services are defined in **unit files** (`.service`)\n- Located in `/etc/systemd/system/` or `/lib/systemd/system/`\n- Managed with `systemctl`\n- Features:\n  - **Parallel startup** (faster boot)\n  - **Socket activation** (start on-demand)\n  - **Dependency management** (start A before B)\n  - **Cgroups integration** (resource limits)\n\n### Common Commands\n\n```bash\nsystemctl start kubelet\nsystemctl status kubelet\nsystemctl enable kubelet  # start on boot\nsystemctl list-units --type=service\n```\n\n### Why This Matters for Kubernetes\n\nKubelet runs as a **systemd service** because:\n1. It needs to start on boot\n2. It needs to be restarted if it crashes\n3. It needs proper cgroup isolation\n4. systemd is the standard on modern Linux (Ubuntu, CentOS, etc.)",
+        "source": "https://github.com/slicer69/sysvinit/"
+      },
+      {
+        "question": "What is the Cloud Controller Manager?",
+        "answer": "The cloud-controller-manager is a Kubernetes control plane component that embeds cloud-specific control logic, letting you link your cluster to your cloud provider's API while keeping cloud-specific code separate from core Kubernetes.",
+        "details": "**Why it exists:**\n- Decouples cloud provider code from core Kubernetes\n- Allows cloud providers to release features at their own pace\n- Keeps Kubernetes core cloud-agnostic\n\n**Controllers it runs:**\n\n| Controller | Purpose |\n|------------|--------|\n| Node controller | Updates Node objects when servers are created/deleted in the cloud |\n| Route controller | Configures network routes in the cloud infrastructure |\n| Service controller | Creates, updates, deletes cloud load balancers |\n\n**When you need it:**\n- Running on AWS, GCP, Azure, or other cloud providers\n- Need automatic load balancer provisioning\n- Want cloud-aware node lifecycle management\n\n**When you don't need it:**\n- Running on bare metal\n- Running locally (minikube, kind)\n- Using a managed Kubernetes service (it's handled for you)\n\nThe cloud-controller-manager runs as a replicated set of processes (typically in Pods) in the control plane.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/cloud-controller/"
+      }
+    ]
+  },
+  {
+    "category": "Workloads",
+    "order": 4,
+    "topics": [
+      {
+        "question": "What is a Pod?",
+        "answer": "A Pod is the smallest deployable unit in Kubernetes. It represents a set of running containers on your cluster, sharing storage and network resources, and a specification for how to run the containers.",
+        "details": "**Key characteristics:**\n- Pods are ephemeral — designed as disposable entities\n- Each Pod is assigned a unique IP address\n- Containers within a Pod share the network namespace (IP address and ports)\n- Pods can specify shared storage volumes accessible by all containers\n- You'll rarely create individual Pods directly — use workload resources instead\n\n**Pod usage patterns:**\n1. **Single container**: The most common case — the Pod wraps a single container\n2. **Multiple containers**: Containers that need to work together and share resources\n\n**Static Pods** are managed directly by the kubelet on a specific node, without the API server. They're used for self-hosted control planes.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/"
+      },
+      {
+        "question": "What happens during a Pod's lifecycle?",
+        "answer": "Pods follow a defined lifecycle, starting in Pending phase, moving to Running if at least one container starts successfully, and then to Succeeded or Failed depending on whether any container terminated in failure.",
+        "details": "**Pod phases:**\n- **Pending**: Accepted but not yet running (scheduling, image pulling)\n- **Running**: At least one container is running\n- **Succeeded**: All containers terminated successfully\n- **Failed**: All containers terminated, at least one in failure\n- **Unknown**: Pod state cannot be obtained\n\n**Container states:**\n- **Waiting**: Not yet running (pulling image, applying secrets)\n- **Running**: Executing without issues\n- **Terminated**: Ran to completion or failed\n\n**Restart policies:**\n- **Always**: Always restart (default for Deployments)\n- **OnFailure**: Restart only on failure (for Jobs)\n- **Never**: Never restart\n\n**Pod conditions:**\n- PodScheduled\n- PodReadyToStartContainers\n- ContainersReady\n- Initialized\n- Ready",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/"
+      },
+      {
+        "question": "What are init containers?",
+        "answer": "Init containers are specialized containers that run before app containers in a Pod. They can contain utilities or setup scripts not present in the app image and always run to completion before the next one starts.",
+        "details": "**Differences from regular containers:**\n- Run before app containers start\n- Run sequentially (each must complete before the next starts)\n- If an init container fails, kubelet restarts it (unless restartPolicy is Never)\n- Don't support lifecycle, livenessProbe, readinessProbe, or startupProbe\n\n**Use cases:**\n- Wait for a Service to be created\n- Register the Pod with a remote server\n- Wait for some time before starting the app\n- Clone a Git repository into a volume\n- Generate configuration files dynamically\n- Check preconditions before app starts",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+      },
+      {
+        "question": "What are sidecar containers?",
+        "answer": "Sidecar containers are secondary containers that run alongside the main container within the same Pod to provide supporting functionality like logging, monitoring, or proxying.",
+        "details": "**Common sidecar patterns:**\n- **Logging**: Collect and forward logs from the main container\n- **Monitoring**: Collect metrics and health information\n- **Proxy**: Handle network traffic (service mesh sidecars like Envoy)\n- **Configuration**: Watch for config changes and update the main container\n\n**Native sidecar containers** (Kubernetes 1.28+):\n- Defined in `initContainers` with `restartPolicy: Always`\n- Start before regular init containers\n- Continue running throughout Pod lifecycle\n- Support all regular container probes\n- Can be used for service mesh, logging agents, etc.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+      },
+      {
+        "question": "What are Deployments and how do I use them?",
+        "answer": "A Deployment provides declarative updates for Pods and ReplicaSets. You describe a desired state in a Deployment, and the Deployment Controller changes the actual state to the desired state at a controlled rate.",
+        "details": "**Use cases:**\n- Create a Deployment to rollout a ReplicaSet\n- Declare new state by updating PodTemplateSpec\n- Rollback to an earlier revision\n- Scale up to facilitate more load\n- Pause to apply multiple fixes, then resume\n- Clean up older ReplicaSets\n\n**Rolling update strategy:**\n- `maxUnavailable`: Max pods unavailable during update (default 25%)\n- `maxSurge`: Max pods created over desired count (default 25%)\n\n**Commands:**\n```bash\nkubectl apply -f deployment.yaml\nkubectl rollout status deployment/nginx\nkubectl rollout history deployment/nginx\nkubectl rollout undo deployment/nginx\nkubectl scale deployment/nginx --replicas=10\n```",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/controllers/deployment/"
+      },
+      {
+        "question": "What are container lifecycle hooks?",
+        "answer": "Container lifecycle hooks enable containers to be aware of events in their management lifecycle and run code when a corresponding lifecycle hook is executed.",
+        "details": "**Two hooks are exposed:**\n\n**PostStart:**\n- Executed immediately after a container is created\n- No guarantee it executes before the container ENTRYPOINT\n- No parameters are passed\n- If it fails, the container is killed\n\n**PreStop:**\n- Called immediately before a container is terminated\n- Blocking — must complete before the TERM signal is sent\n- Useful for graceful shutdown\n- If it fails, the container is killed\n\n**Hook handlers:**\n- **exec**: Executes a specific command inside the container\n- **httpGet**: Executes an HTTP GET request against a specific endpoint",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/"
+      },
+      {
+        "question": "Why is Kubernetes terminology so confusing?",
+        "type": "investigation",
+        "answer": "Kubernetes uses similar terms (state, phase, status, condition) for different concepts, making it hard to understand what's actually happening. Here's a guide to untangle them.",
+        "details": "### The Problem\n\nKubernetes uses similar terms for different concepts:\n\n| Term | Used In | Meaning |\n|------|---------|----------|\n| \"state\" | Container | Running, Waiting, Terminated |\n| \"state\" | Pod | (doesn't exist, uses \"phase\") |\n| \"phase\" | Pod | Pending, Running, Succeeded, Failed |\n| \"status\" | Object | The entire `.status` field |\n| \"condition\" | Various | Ready, Initialized, ContainersReady... |\n\n### Specific Confusion\n\n**Pod Phases vs Container States**\n- A Pod can be in phase \"Running\" while a container is in state \"Waiting\"\n- These are related but not the same thing\n- The naming doesn't make this relationship clear\n\n**Probe Outcomes**\n- Success, Failure, Unknown\n- These affect container state, which affects pod phase, which affects...\n- The cascade is hard to follow\n\n### The Hierarchy\n\n```\nProbe Outcome → Container State → Pod Phase → Workload Status\n     ↓              ↓                ↓              ↓\n  Success       Running          Running      Available\n  Failure       Waiting          Pending      Progressing\n  Unknown       Terminated       Failed       Degraded\n```\n\n### Debugging Guide\n\n- **Pod won't start?** Check Events and Container state (Waiting reason)\n- **Pod keeps restarting?** Check Container state (Terminated reason) and probe configs\n- **Pod running but not ready?** Check Conditions (Ready, ContainersReady)",
+        "source": ""
+      }
+    ]
+  },
+  {
+    "category": "Scheduling",
+    "order": 5,
+    "topics": [
+      {
+        "question": "How does Pod scheduling work?",
+        "answer": "When a Pod is created, the kube-scheduler selects an optimal node for the Pod to run on. It considers resource requirements, hardware/software/policy constraints, affinity/anti-affinity specifications, and data locality.",
+        "details": "**Scheduling process:**\n1. **Filtering**: Find nodes that are feasible to schedule the Pod\n2. **Scoring**: Rank feasible nodes to find the most suitable\n3. **Binding**: Notify the API server of the selected node\n\n**Factors considered:**\n- Resource requests and limits\n- Node selectors and node affinity\n- Pod affinity and anti-affinity\n- Taints and tolerations\n- Topology spread constraints\n- Priority and preemption",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/scheduling-eviction/"
+      },
+      {
+        "question": "What are disruptions and how do I handle them?",
+        "answer": "Pods can be disrupted involuntarily (hardware failures, node problems) or voluntarily (draining nodes, updating deployments). PodDisruptionBudgets help ensure application availability during voluntary disruptions.",
+        "details": "**Involuntary disruptions:**\n- Hardware failure\n- Cluster administrator deletes VM\n- Cloud provider or hypervisor failure\n- Kernel panic\n- Node disappears due to network partition\n- Eviction due to resource pressure\n\n**Voluntary disruptions:**\n- Deleting the deployment\n- Updating deployment's pod template\n- Draining a node for maintenance\n- Removing a pod to permit something else to schedule\n\n**PodDisruptionBudget (PDB):**\n- Limits number of pods that can be down simultaneously\n- Specify `minAvailable` or `maxUnavailable`\n- Respected by voluntary disruption operations",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/disruptions/"
+      },
+      {
+        "question": "What are Pod Quality of Service (QoS) classes?",
+        "answer": "Kubernetes assigns QoS classes to Pods based on their resource requests and limits. QoS classes affect scheduling decisions and eviction priority when nodes run out of resources.",
+        "details": "**QoS Classes:**\n\n**Guaranteed** (highest priority):\n- Every container has memory and CPU limits\n- Limits equal requests for all containers\n- Last to be evicted\n\n**Burstable:**\n- At least one container has a memory or CPU request\n- Not all containers have equal requests and limits\n- Evicted after BestEffort pods\n\n**BestEffort** (lowest priority):\n- No containers have resource requests or limits\n- First to be evicted when resources are scarce\n\n**Memory QoS with cgroup v2:**\n- Uses `memory.min` and `memory.high` for better memory protection\n- Prevents memory starvation scenarios",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/pod-qos/"
+      }
+    ]
+  },
+  {
+    "category": "Production Setup",
+    "order": 6,
+    "topics": [
+      {
+        "question": "What options do I have for running Kubernetes in production?",
+        "answer": "Before building a Kubernetes production environment on your own, consider options like Serverless, Managed control plane, Managed worker nodes, or full Integration with cloud providers.",
+        "details": "**Options:**\n- **Serverless**: Run workloads on third-party equipment without managing a cluster\n- **Managed control plane**: Provider manages scale, availability, patches, and upgrades\n- **Managed worker nodes**: Configure pools of nodes, provider ensures availability\n- **Integration**: Providers integrate K8s with storage, registries, authentication, and dev tools\n\n**If self-managing:**\n- Authentication: Client certificates, bearer tokens, LDAP, Kerberos\n- Authorization: RBAC (recommended) or ABAC\n- Set namespace limits for memory and CPU quotas\n- Create additional service accounts\n- Prepare for DNS demand",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/production-environment/"
+      },
+      {
+        "question": "How do I set up high availability?",
+        "answer": "You can set up an HA cluster with stacked control plane nodes (etcd colocated with control plane) or with external etcd nodes (etcd runs on separate nodes).",
+        "details": "**Stacked etcd topology:**\n- Each control plane node creates a local etcd member\n- etcd communicates only with the kube-apiserver on the same node\n- Requires minimum of 3 stacked control plane nodes\n- Coupling means if one node fails, both control plane and etcd member are lost\n\n**External etcd topology:**\n- etcd members run on separate hosts\n- Each etcd host communicates with kube-apiserver of each control plane node\n- Requires minimum of 3 control plane nodes AND 3 etcd nodes (6 total)\n- More resilient but more expensive\n\n**Production control plane:**\n- Configure load balancer for apiserver\n- Separate and backup etcd service\n- Create multiple control plane systems\n- Span multiple zones for availability",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/ha-topology/"
+      },
+      {
+        "question": "How do I run a cluster across multiple zones?",
+        "answer": "Kubernetes is designed so that a single cluster can run across multiple failure zones. Major cloud providers define a region as a set of failure zones that provide consistent features.",
+        "details": "**Control plane:**\n- Place replicas across multiple failure zones\n- Select at least three failure zones for important concerns\n- Replicate each component (API server, scheduler, etcd, controller manager) across zones\n\n**Nodes:**\n- Kubernetes automatically adds zone labels to nodes\n- Use node labels with Pod topology spread constraints\n- Use tools like Cluster API to define machines across failure domains\n\n**Storage:**\n- Kubernetes automatically adds zone labels to PersistentVolumes\n- Scheduler ensures pods claiming a PV are placed in the same zone\n\n**Networking:**\n- Zone-aware networking depends on your network plugin\n- LoadBalancer might only send traffic to pods in the same zone",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/best-practices/multiple-zones/"
+      },
+      {
+        "question": "What are the limits for large clusters?",
+        "answer": "Kubernetes v1.32 supports clusters with up to 5,000 nodes with specific limits on pods per node and total pods/containers.",
+        "details": "**Supported configurations:**\n- No more than 110 pods per node\n- No more than 5,000 nodes\n- No more than 150,000 total pods\n- No more than 300,000 total containers\n\n**Large cluster considerations:**\n- Run one or two control plane instances per failure zone\n- Scale vertically first, then horizontally\n- Run at least one instance per failure zone for fault-tolerance\n- Consider storing Event objects in a separate etcd instance\n- Some addons scale vertically, some horizontally, some run as DaemonSets",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/best-practices/cluster-large/"
+      },
+      {
+        "question": "What PKI certificates are required?",
+        "answer": "Kubernetes requires PKI certificates for authentication over TLS. You need server certificates for the API server, etcd, and kubelets, plus client certificates for components to authenticate to each other.",
+        "details": "**Server certificates:**\n- API server endpoint\n- etcd server\n- Each kubelet\n- Front-proxy (optional)\n\n**Client certificates:**\n- Each kubelet (authenticate to API server)\n- Each API server (authenticate to etcd)\n- Controller manager (to API server)\n- Scheduler (to API server)\n- kube-proxy for each node\n- Administrators (optional)\n- Front-proxy (optional)\n\n**Certificate locations:**\n- Most certificates: `/etc/kubernetes/pki`\n- User account certificates: `/etc/kubernetes`",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/best-practices/certificates/"
+      },
+      {
+        "question": "How do I configure container runtimes?",
+        "answer": "You need to install a container runtime on each node so that Pods can run. The kubelet and container runtime must use the same cgroup driver.",
+        "details": "**Requirements:**\n- Container runtime on each node\n- Same cgroup driver for kubelet and runtime\n- Linux kernel must allow IPv4 packet routing (most cluster networking implementations enable this)\n\n**Cgroup drivers:**\n- **cgroupfs**: Default driver\n- **systemd**: Recommended when systemd is init system\n\n**Critical:** Two cgroup managers result in two views of available resources, which causes instability. The kubelet and runtime must be configured identically.",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/production-environment/container-runtimes/"
+      },
+      {
+        "question": "How do I enforce Pod security standards?",
+        "answer": "The Pod Security Admission Controller enforces Pod Security Standards. Namespaces without security labels should be considered gaps in your cluster security model.",
+        "details": "**Recommendations:**\n- Analyze workloads in each namespace\n- Reference Pod Security Standards to decide appropriate level\n- Unlabeled namespaces indicate they haven't been evaluated yet\n- Document unique security requirements for permissive namespaces\n\n**Audit and warn modes:**\n- Use `warn` mode if you expect workload authors to make changes\n- Use `audit` mode to monitor/drive changes via audit logs\n- Set modes to the desired level you'd eventually like to enforce\n\n**Alternatives:**\n- Kubewarden\n- Kyverno\n- OPA Gatekeeper",
+        "source": "https://v1-32.docs.kubernetes.io/docs/setup/best-practices/enforcing-pod-security-standards/"
+      }
+    ]
+  },
+  {
+    "category": "Advanced Topics",
+    "order": 7,
+    "topics": [
+      {
+        "question": "What is the Downward API?",
+        "answer": "The Downward API allows containers to consume information about themselves or the cluster without using the Kubernetes client or API server.",
+        "details": "**Available information:**\n- Pod name, namespace, UID\n- Pod labels and annotations\n- Container resource limits and requests\n- Node name and IP\n- Service account name\n\n**Two ways to expose:**\n1. **Environment variables**: Inject specific fields as env vars\n2. **Volume files**: Mount a downwardAPI volume with field data\n\n**Use cases:**\n- Pass pod identity to applications\n- Make resource limits available to containers\n- Configure containers based on labels/annotations",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/downward-api/"
+      },
+      {
+        "question": "What are user namespaces?",
+        "answer": "User namespaces isolate the container user ID from the host user ID, improving security by preventing containers from having root privileges on the host.",
+        "details": "**Benefits:**\n- Container root (UID 0) maps to unprivileged UID on host\n- Limits impact of container escape vulnerabilities\n- Better isolation between containers and host\n\n**Requirements:**\n- Linux kernel with user namespace support\n- Container runtime support\n- Kubernetes 1.25+ (alpha feature)\n\n**Configuration:**\n- Set `hostUsers: false` in pod spec\n- Kubelet manages UID/GID mappings automatically",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/user-namespaces/"
+      },
+      {
+        "question": "What are leases?",
+        "answer": "Leases are a lightweight mechanism for communicating information between components. They're used for node heartbeats, leader election, and API server identity.",
+        "details": "**Use cases:**\n\n**Node heartbeats:**\n- Each node has an associated Lease object in kube-node-lease namespace\n- Kubelet updates lease's `renewTime` field every 10 seconds\n- More efficient than updating full Node status\n\n**Leader election:**\n- Controllers use leases to determine which instance is leader\n- Only leader actively reconciles resources\n\n**API server identity:**\n- Each kube-apiserver publishes its identity using a Lease\n- Enables coordinated features across API servers",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/architecture/leases/"
+      },
+      {
+        "question": "What is ephemeral containers?",
+        "answer": "Ephemeral containers are temporary containers that run in an existing Pod for troubleshooting purposes. They're useful for debugging when kubectl exec is insufficient.",
+        "details": "**Characteristics:**\n- Added to a running Pod for debugging\n- Lack guarantees for resources or execution\n- Never automatically restarted\n- Cannot have ports exposed\n- Don't support readiness/liveness probes\n\n**Use cases:**\n- Debug distroless images (no shell)\n- Inspect Pod state when crash looping\n- Add debugging tools without rebuilding images\n\n**Usage:**\n```bash\nkubectl debug -it <pod-name> --image=busybox --target=<container>\n```",
+        "source": "https://v1-32.docs.kubernetes.io/docs/concepts/workloads/pods/ephemeral-containers/"
+      }
+    ]
+  },
+  {
+    "category": "Resources",
+    "order": 8,
+    "topics": [
+      {
+        "question": "What are the controller utility functions?",
+        "type": "reference",
+        "answer": "The controller_utils.go file is the shared toolbox for all Kubernetes controllers, providing interfaces for pod/replicaset control, expectation tracking, and filtering utilities.",
+        "details": "### Overview\n\nThe `controller_utils.go` file provides shared utilities for all controllers.\n\n### Resync Functions\n\n| Function | Purpose |\n|----------|----------|\n| `NoResyncPeriodFunc` | Returns 0 (no periodic resync) |\n| `StaticResyncPeriodFunc` | Returns a fixed resync interval |\n\n### Expectation Tracking\n\nControllers use \"expectations\" to avoid duplicate work:\n\n| Type | Purpose |\n|------|----------|\n| `ControllerExpectations` | Track expected creates/deletes |\n| `ControlleeExpectations` | Per-object expectations |\n| `UIDTrackingControllerExpectations` | Track by UID |\n\nExample: ReplicaSet controller expects to create 3 pods. It won't try to create more until those 3 are observed.\n\n### Control Interfaces\n\n**Pods:**\n- `PodControlInterface` (interface)\n- `RealPodControl` (production)\n- `FakePodControl` (testing)\n- Methods: `CreatePods`, `CreatePodsWithGenerateName`, `DeletePod`\n\n**ReplicaSets:**\n- `RSControlInterface` / `RealRSControl`\n\n### Filtering Functions\n\n```go\nFilterActivePods(pods)       // Exclude terminated pods\nFilterTerminatingPods(pods)  // Only terminating pods\nFilterActiveReplicaSets(rs)  // Exclude deleted RS\n```\n\n### Node Management\n\n```go\nAddOrUpdateTaintOnNode(node, taint)\nRemoveTaintOffNode(node, taint)\nPatchNodeTaints(node, taints)\nAddOrUpdateLabelsOnNode(node, labels)\n```",
+        "source": "https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/controller_utils.go"
+      },
+      {
+        "question": "Where can I learn more about Kubernetes?",
+        "type": "reference",
+        "answer": "Here are curated links to official documentation, advanced topics, design documents, and learning resources.",
+        "details": "### Official Documentation\n\n- [API Conventions](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md) — How K8s APIs are designed\n- [kubectl docs](https://kubectl.docs.kubernetes.io/) — Official kubectl reference\n- [DNS Horizontal Autoscaling](https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/) — Scale CoreDNS based on cluster size\n\n### Advanced Topics\n\n- [Cluster API](https://cluster-api.sigs.k8s.io/) — Declarative cluster lifecycle management\n- [Hierarchical Namespaces](https://kubernetes.io/blog/2020/08/14/introducing-hierarchical-namespaces/) — Nested namespace structure\n- [Hosted Control Planes (OpenShift)](https://docs.redhat.com/en/documentation/openshift_container_platform/4.15/html-single/hosted_control_planes/index) — Run control planes as pods\n\n### Design & Architecture\n\n- [Protobuf Design Proposal](https://github.com/kubernetes/design-proposals-archive/blob/main/api-machinery/protobuf.md) — Why K8s uses protobuf\n- [Termination Order](https://github.com/kubernetes/kubernetes/blob/2d0a4f75560154454682b193b42813159b20f284/pkg/kubelet/kuberuntime/kuberuntime_termination_order.go) — How pod termination works\n\n### Learning Resources\n\n- [K8s Academy Fundamentals](https://github.com/K8sAcademy/Fundamentals-HandsOn) — Hands-on exercises\n- [Kubernetes Goat](https://madhuakula.com/kubernetes-goat/) — Security training environment",
+        "source": ""
+      }
+    ]
+  }
+]

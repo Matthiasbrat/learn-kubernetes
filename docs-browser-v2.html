@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kubernetes Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;500;600&family=Poppins:wght@400;500;600&family=Inter:wght@400;500;600&family=Nunito:wght@400;600;700&family=Quicksand:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0b;
+            --bg-secondary: #121214;
+            --bg-card: #18181b;
+            --bg-hover: #1f1f23;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --accent: #22d3ee;
+            --accent-dim: #0891b2;
+            --border: #27272a;
+            --border-light: #3f3f46;
+            --success: #4ade80;
+            --code-bg: #0d1117;
+            --code-header: #161b22;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #fafafa;
+            --bg-secondary: #f4f4f5;
+            --bg-card: #ffffff;
+            --bg-hover: #e4e4e7;
+            --text-primary: #18181b;
+            --text-secondary: #3f3f46;
+            --text-muted: #71717a;
+            --accent: #0891b2;
+            --accent-dim: #06b6d4;
+            --border: #e4e4e7;
+            --border-light: #d4d4d8;
+            --success: #22c55e;
+            --code-bg: #1e293b;
+            --code-header: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-icon {
+            color: var(--accent);
+        }
+
+        .nav-category {
+            margin-bottom: 1.25rem;
+        }
+
+        .nav-category-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding-right: 0.5rem;
+        }
+
+        .nav-category-title:hover {
+            color: var(--text-secondary);
+        }
+
+        .nav-category-toggle {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .nav-category.collapsed .nav-category-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .nav-category.collapsed .nav-list {
+            display: none;
+        }
+
+        .nav-list {
+            list-style: none;
+        }
+
+        .nav-item a {
+            display: block;
+            padding: 0.4rem 0.75rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item a:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .nav-item a.active {
+            background: var(--bg-card);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        /* Main content */
+        .main {
+            padding: 2rem 3rem;
+            max-width: 900px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .font-select, .theme-btn {
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .theme-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+        }
+
+        .theme-btn:hover, .font-select:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-light);
+        }
+
+        .icon-sun { display: none; }
+        .icon-moon { display: block; }
+        [data-theme="light"] .icon-sun { display: block; }
+        [data-theme="light"] .icon-moon { display: none; }
+
+        /* Category section */
+        .category-section {
+            margin-bottom: 3rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent);
+            display: inline-block;
+        }
+
+        /* Question card */
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .question-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .question-header {
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .question-header:hover {
+            background: var(--bg-hover);
+        }
+
+        .question-title {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+
+        /* Question types */
+        .question-type {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+        }
+
+        .type-investigation {
+            background: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+        }
+
+        .type-deep-dive {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+
+        .type-reference {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .toggle-icon {
+            color: var(--text-muted);
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .question-card.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Answer content */
+        .answer-content {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .question-card.expanded .answer-content {
+            display: block;
+        }
+
+        .answer-summary {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .answer-summary::first-letter {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            float: left;
+            line-height: 1;
+            padding-right: 0.4rem;
+            padding-top: 0.15rem;
+        }
+
+        .answer-details {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .answer-details h3, .answer-details h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .answer-details h3:first-child, .answer-details h4:first-child {
+            margin-top: 0;
+        }
+
+        .answer-details p {
+            margin-bottom: 1rem;
+        }
+
+        .answer-details ul, .answer-details ol {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .answer-details li {
+            margin-bottom: 0.4rem;
+        }
+
+        .answer-details strong {
+            color: var(--text-primary);
+        }
+
+        /* Code blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--code-header);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .code-lang {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .copy-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        .code-content {
+            padding: 1rem;
+            overflow-x: auto;
+            white-space: pre;
+            tab-size: 2;
+            color: #e6edf3;
+        }
+
+        /* Source link */
+        .source-link {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .source-link a {
+            font-size: 0.8rem;
+            color: var(--accent-dim);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .source-link a:hover {
+            color: var(--accent);
+        }
+
+        /* YAML highlighting */
+        .yaml-key { color: #7ee787; }
+        .yaml-string { color: #a5d6ff; }
+        .yaml-number { color: #79c0ff; }
+        .yaml-boolean { color: #ff7b72; }
+        .yaml-comment { color: #8b949e; font-style: italic; }
+
+        /* Search highlight */
+        mark {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--accent);
+            padding: 0.1em 0.2em;
+            border-radius: 3px;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Results info */
+        .results-info {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        /* Index page */
+        .index-page {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .index-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 1rem;
+        }
+
+        .index-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .index-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .index-category {
+            margin-bottom: 2rem;
+        }
+
+        .index-category-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .index-questions {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .index-question {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .index-question:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .index-question-badge {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .index-question-text {
+            flex: 1;
+        }
+
+        .index-arrow {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* URL loader */
+        .url-loader {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .url-loader label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .url-input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .url-loader input[type="text"] {
+            flex: 1;
+            padding: 0.6rem 0.9rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .url-loader input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .url-loader input[type="file"] {
+            display: none;
+        }
+
+        #load-url-btn {
+            padding: 0.6rem 1.25rem;
+            background: var(--accent);
+            border: none;
+            border-radius: 8px;
+            color: var(--bg-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+
+        #load-url-btn:hover {
+            opacity: 0.9;
+        }
+
+        #load-url-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .url-hint {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .file-link {
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .file-link:hover {
+            opacity: 0.8;
+        }
+
+        #load-status {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        #load-status.loading {
+            color: var(--text-muted);
+        }
+
+        #load-status.success {
+            color: #4ade80;
+        }
+
+        #load-status.error {
+            color: #f87171;
+        }
+
+        /* Main tabs */
+        .main-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .main-tab {
+            padding: 0.6rem 1.25rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .main-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .main-tab.active {
+            color: var(--accent);
+            background: var(--bg-secondary);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Learn guide styles */
+        .chapter-section {
+            margin-bottom: 3rem;
+        }
+
+        .chapter-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .chapter-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.25rem;
+        }
+
+        .chapter-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .chapter-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.25rem 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.15s ease;
+        }
+
+        .section-header:hover {
+            background: var(--bg-hover);
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            display: none;
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .section-card.expanded .section-content {
+            display: block;
+        }
+
+        .section-card .toggle-icon {
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+            color: var(--text-muted);
+        }
+
+        .section-card.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .section-text {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .section-text h3, .section-text h4 {
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem;
+        }
+
+        .section-text h3:first-child, .section-text h4:first-child {
+            margin-top: 0;
+        }
+
+        .section-text p {
+            margin-bottom: 1rem;
+        }
+
+        .section-text ul, .section-text ol {
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+        }
+
+        .section-text li {
+            margin-bottom: 0.4rem;
+        }
+
+        .section-text strong {
+            color: var(--text-primary);
+        }
+
+        .section-source {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .section-source a {
+            font-size: 0.8rem;
+            color: var(--accent-dim);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .section-source a:hover {
+            color: var(--accent);
+        }
+
+        /* Learn index */
+        .learn-index {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .learn-index-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-top: 1rem;
+        }
+
+        .learn-index-title {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .learn-index-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .learn-chapter-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .learn-chapter-card:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+        }
+
+        .learn-chapter-number {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .learn-chapter-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin: 0.25rem 0;
+        }
+
+        .learn-chapter-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .learn-chapter-sections {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <svg class="logo-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                    </svg>
+                    K8s Docs
+                </div>
+            </div>
+            <nav id="sidebar-nav">
+                <!-- Generated dynamically -->
+            </nav>
+        </aside>
+
+        <main class="main">
+            <div class="header">
+                <div class="search-box">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                    <input type="text" id="search" placeholder="What do you want to know?">
+                </div>
+                <div class="header-controls">
+                    <select class="font-select" id="font-select" onchange="changeFont(this.value)">
+                        <option value="inter">Inter</option>
+                        <option value="roboto">Roboto</option>
+                        <option value="open-sans">Open Sans</option>
+                        <option value="lato">Lato</option>
+                        <option value="poppins">Poppins</option>
+                        <option value="nunito">Nunito</option>
+                        <option value="quicksand">Quicksand</option>
+                    </select>
+                    <button class="theme-btn" onclick="toggleTheme()">
+                        <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-tabs">
+                <button class="main-tab active" onclick="switchMainTab('learn')">📖 Learn</button>
+                <button class="main-tab" onclick="switchMainTab('questions')">❓ Questions</button>
+            </div>
+
+            <div id="learn-content" class="tab-content active">
+                <!-- Learn guide content -->
+            </div>
+
+            <div id="questions-content" class="tab-content">
+                <!-- Questions content -->
+                <div class="url-loader">
+                    <label for="url-input">Load documentation from URL:</label>
+                    <div class="url-input-row">
+                        <input type="text" id="url-input" placeholder="https://example.com/docs.json">
+                        <button id="load-url-btn" onclick="loadFromUrl()">Load</button>
+                    </div>
+                    <div class="url-hint">Or <label for="file-input" class="file-link">upload a local file</label></div>
+                    <input type="file" id="file-input" accept=".json">
+                    <div id="load-status"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // State
+        let docsData = [];
+        let learnData = [];
+        let filteredDocs = [];
+        let filteredLearn = [];
+        let currentView = 'index'; // 'index' or 'docs'
+        let currentMainTab = 'learn'; // 'learn' or 'questions'
+
+        // DOM
+        const searchInput = document.getElementById('search');
+        const learnContent = document.getElementById('learn-content');
+        const questionsContent = document.getElementById('questions-content');
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const fileInput = document.getElementById('file-input');
+        const urlInput = document.getElementById('url-input');
+        const loadStatus = document.getElementById('load-status');
+
+        // URLs for auto-loading
+        const LEARN_URL = 'https://raw.githubusercontent.com/Matthiasbrat/kubernetes-docs-extract/refs/heads/main/learn-guide.json';
+        const QUESTIONS_URL = 'https://raw.githubusercontent.com/Matthiasbrat/kubernetes-docs-extract/refs/heads/main/summary-restructured.json';
+
+        // Tab switching
+        function switchMainTab(tab) {
+            currentMainTab = tab;
+            document.querySelectorAll('.main-tab').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`.main-tab[onclick="switchMainTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-content`).classList.add('active');
+            
+            const query = searchInput.value.toLowerCase().trim();
+            
+            if (tab === 'learn') {
+                searchInput.placeholder = 'Search the guide...';
+                if (query) {
+                    filterLearn(query);
+                } else {
+                    filteredLearn = learnData;
+                    renderLearnSidebar();
+                    renderLearnIndex();
+                }
+            } else {
+                searchInput.placeholder = 'What do you want to know?';
+                if (query) {
+                    currentView = 'docs';
+                    filterDocs(query);
+                } else {
+                    currentView = 'index';
+                    filteredDocs = docsData;
+                    renderSidebar();
+                    renderIndex();
+                }
+            }
+        }
+
+        // Load Learn guide
+        async function loadLearnGuide() {
+            try {
+                const response = await fetch(LEARN_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                learnData = JSON.parse(text);
+                filteredLearn = learnData;
+                renderLearnIndex();
+                renderLearnSidebar();
+            } catch (err) {
+                console.error('Failed to load learn guide:', err);
+                learnContent.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div><div>Failed to load guide: ${err.message}</div></div>`;
+            }
+        }
+
+        // Load Questions
+        async function loadQuestions() {
+            try {
+                const response = await fetch(QUESTIONS_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                docsData = JSON.parse(text);
+                filteredDocs = docsData;
+                renderSidebar();
+                renderIndex();
+                hideLoader();
+            } catch (err) {
+                console.error('Failed to load questions:', err);
+                setStatus('Failed to auto-load. Enter URL manually.', 'error');
+            }
+        }
+
+        // Auto-load both on page ready
+        loadLearnGuide();
+        loadQuestions();
+
+        // Load from URL (for questions)
+        async function loadFromUrl() {
+            const url = urlInput.value.trim();
+            if (!url) {
+                setStatus('Please enter a URL', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('load-url-btn');
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            setStatus('Fetching...', 'loading');
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const text = await response.text();
+                docsData = JSON.parse(text);
+                filteredDocs = docsData;
+                renderSidebar();
+                renderIndex();
+                hideLoader();
+            } catch (err) {
+                console.error('Failed to load:', err);
+                setStatus('Failed: ' + err.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Load';
+            }
+        }
+
+        function setStatus(msg, type) {
+            if (loadStatus) {
+                loadStatus.textContent = msg;
+                loadStatus.className = type;
+            }
+        }
+
+        function hideLoader() {
+            const loader = document.querySelector('.url-loader');
+            if (loader) loader.style.display = 'none';
+        }
+
+        // Check for URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const paramUrl = urlParams.get('url');
+        if (paramUrl) {
+            urlInput.value = paramUrl;
+            loadFromUrl();
+        }
+
+        // File upload handler (fallback)
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            setStatus('Reading file...', 'loading');
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const text = event.target.result;
+                    docsData = JSON.parse(text);
+                    filteredDocs = docsData;
+                    renderSidebar();
+                    renderIndex();
+                    hideLoader();
+                } catch (err) {
+                    console.error('Error loading file:', err);
+                    setStatus('Error: ' + err.message, 'error');
+                }
+            };
+            reader.onerror = () => {
+                setStatus('Error reading file', 'error');
+            };
+            reader.readAsText(file, 'UTF-8');
+            
+            // Reset input so same file can be selected again
+            e.target.value = '';
+        });
+
+        // Search
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = e.target.value.toLowerCase().trim();
+                if (currentMainTab === 'learn') {
+                    if (query) {
+                        filterLearn(query);
+                    } else {
+                        filteredLearn = learnData;
+                        renderLearnSidebar();
+                        renderLearnIndex();
+                    }
+                } else {
+                    if (query) {
+                        currentView = 'docs';
+                        filterDocs(query);
+                    } else {
+                        currentView = 'index';
+                        filteredDocs = docsData;
+                        renderSidebar();
+                        renderIndex();
+                    }
+                }
+            }, 200);
+        });
+
+        function filterLearn(query) {
+            const words = query.split(/\s+/).filter(w => w.length > 0);
+            
+            filteredLearn = learnData.map(chapter => ({
+                ...chapter,
+                sections: chapter.sections.filter(section => {
+                    const searchText = [
+                        section.title,
+                        section.content || ''
+                    ].join(' ').toLowerCase();
+                    return words.every(word => searchText.includes(word));
+                })
+            })).filter(chapter => chapter.sections.length > 0);
+            
+            renderLearnSidebar();
+            
+            // Show all matching sections expanded
+            if (filteredLearn.length > 0) {
+                const totalSections = filteredLearn.reduce((sum, c) => sum + c.sections.length, 0);
+                learnContent.innerHTML = `
+                    <button onclick="backToLearnIndex()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; margin-bottom: 1.5rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        Back to Index
+                    </button>
+                    <div class="results-info">Found ${totalSections} sections matching "${escapeHtml(query)}"</div>
+                    ${filteredLearn.map(chapter => `
+                        <div class="chapter-section">
+                            <div class="chapter-header">
+                                <div class="chapter-number">Chapter ${chapter.order}</div>
+                                <h1 class="chapter-title">${escapeHtml(chapter.chapter)}</h1>
+                            </div>
+                            ${chapter.sections.map((section, i) => `
+                                <article class="section-card expanded" id="${chapter.chapter}-${i}">
+                                    <div class="section-header" onclick="toggleSection(this)">
+                                        <h3 class="section-title">${highlightText(escapeHtml(section.title), query)}</h3>
+                                        <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="6 9 12 15 18 9"></polyline>
+                                        </svg>
+                                    </div>
+                                    <div class="section-content">
+                                        <div class="section-text">${highlightText(parseMarkdown(section.content), query)}</div>
+                                    </div>
+                                </article>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                `;
+            } else {
+                learnContent.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div>No results found</div></div>';
+            }
+        }
+
+        function filterDocs(query) {
+            if (!query) {
+                filteredDocs = docsData;
+            } else {
+                // Split query into words for AND matching
+                const words = query.split(/\s+/).filter(w => w.length > 0);
+                
+                filteredDocs = docsData.map(category => ({
+                    ...category,
+                    topics: category.topics.filter(topic => {
+                        const searchText = [
+                            topic.question,
+                            topic.answer,
+                            topic.details || '',
+                            topic.type || ''
+                        ].join(' ').toLowerCase();
+                        
+                        // Match only if ALL words are found
+                        return words.every(word => searchText.includes(word));
+                    })
+                })).filter(category => category.topics.length > 0);
+            }
+            renderSidebar();
+            renderDocs(query);
+        }
+
+        // Render sidebar
+        function renderSidebar() {
+            if (filteredDocs.length === 0) {
+                sidebarNav.innerHTML = '';
+                return;
+            }
+
+            sidebarNav.innerHTML = filteredDocs.map(category => `
+                <div class="nav-category">
+                    <div class="nav-category-title" onclick="toggleCategory(this)">
+                        <span>${escapeHtml(category.category)}</span>
+                        <svg class="nav-category-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <ul class="nav-list">
+                        ${category.topics.map((topic, i) => `
+                            <li class="nav-item">
+                                <a href="#" onclick="goToQuestion('${category.category}', ${i}); return false;">
+                                    ${escapeHtml(truncate(topic.question.replace('?', ''), 35))}
+                                </a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        function toggleCategory(el) {
+            el.closest('.nav-category').classList.toggle('collapsed');
+        }
+
+        // Get type badge HTML
+        function getTypeBadge(type) {
+            if (!type) return '';
+            const labels = {
+                'investigation': '🔍 Investigation',
+                'deep-dive': '🏊 Deep Dive',
+                'reference': '📚 Reference'
+            };
+            return `<span class="question-type type-${type}">${labels[type] || type}</span>`;
+        }
+
+        // Get small badge for index
+        function getIndexBadge(type) {
+            if (!type) return '';
+            const config = {
+                'investigation': { label: '🔍', cls: 'type-investigation' },
+                'deep-dive': { label: '🏊', cls: 'type-deep-dive' },
+                'reference': { label: '📚', cls: 'type-reference' }
+            };
+            const c = config[type];
+            if (!c) return '';
+            return `<span class="index-question-badge ${c.cls}">${c.label}</span>`;
+        }
+
+        // ============ LEARN TAB ============
+
+        // Render Learn sidebar
+        function renderLearnSidebar() {
+            if (filteredLearn.length === 0) {
+                sidebarNav.innerHTML = '';
+                return;
+            }
+
+            sidebarNav.innerHTML = filteredLearn.map(chapter => `
+                <div class="nav-category">
+                    <div class="nav-category-title" onclick="toggleCategory(this)">
+                        <span>Ch. ${chapter.order}: ${escapeHtml(chapter.chapter)}</span>
+                        <svg class="nav-category-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <ul class="nav-list">
+                        ${chapter.sections.map((section, i) => `
+                            <li class="nav-item">
+                                <a href="#" onclick="goToSection('${chapter.chapter}', ${i}); return false;">
+                                    ${escapeHtml(truncate(section.title, 30))}
+                                </a>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        // Render Learn index
+        function renderLearnIndex() {
+            if (filteredLearn.length === 0) {
+                learnContent.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>Loading guide...</div></div>';
+                return;
+            }
+
+            const totalSections = filteredLearn.reduce((sum, c) => sum + c.sections.length, 0);
+
+            learnContent.innerHTML = `
+                <div class="learn-index">
+                    <div class="learn-index-header">
+                        <h1 class="learn-index-title">Learn Kubernetes</h1>
+                        <p class="learn-index-subtitle">A structured guide from 0 to 100 • ${filteredLearn.length} chapters • ${totalSections} sections</p>
+                    </div>
+                    ${filteredLearn.map(chapter => `
+                        <div class="learn-chapter-card" onclick="goToChapter('${chapter.chapter}')">
+                            <div class="learn-chapter-number">Chapter ${chapter.order}</div>
+                            <div class="learn-chapter-title">${escapeHtml(chapter.chapter)}</div>
+                            <div class="learn-chapter-desc">${escapeHtml(chapter.description)}</div>
+                            <div class="learn-chapter-sections">${chapter.sections.length} sections</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Render Learn chapter content
+        function renderLearnChapter(chapterName) {
+            const chapter = filteredLearn.find(c => c.chapter === chapterName);
+            if (!chapter) return;
+
+            const backBtn = `<button onclick="backToLearnIndex()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; margin-bottom: 1.5rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back to Index
+            </button>`;
+
+            learnContent.innerHTML = backBtn + `
+                <div class="chapter-section">
+                    <div class="chapter-header">
+                        <div class="chapter-number">Chapter ${chapter.order}</div>
+                        <h1 class="chapter-title">${escapeHtml(chapter.chapter)}</h1>
+                        <p class="chapter-description">${escapeHtml(chapter.description)}</p>
+                    </div>
+                    ${chapter.sections.map((section, i) => `
+                        <article class="section-card" id="${chapter.chapter}-${i}">
+                            <div class="section-header" onclick="toggleSection(this)">
+                                <h3 class="section-title">${escapeHtml(section.title)}</h3>
+                                <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="section-content">
+                                <div class="section-text">${parseMarkdown(section.content)}</div>
+                                ${section.source ? `
+                                    <div class="section-source">
+                                        <a href="${escapeHtml(section.source)}" target="_blank" rel="noopener" style="color: var(--accent); font-size: 0.85rem;">
+                                            View source →
+                                        </a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </article>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function goToChapter(chapterName) {
+            renderLearnChapter(chapterName);
+            window.scrollTo(0, 0);
+        }
+
+        function goToSection(chapterName, sectionIndex) {
+            renderLearnChapter(chapterName);
+            setTimeout(() => {
+                const el = document.getElementById(`${chapterName}-${sectionIndex}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    el.classList.add('expanded');
+                }
+            }, 50);
+        }
+
+        function backToLearnIndex() {
+            searchInput.value = '';
+            filteredLearn = learnData;
+            renderLearnSidebar();
+            renderLearnIndex();
+        }
+
+        function toggleSection(header) {
+            header.closest('.section-card').classList.toggle('expanded');
+        }
+
+        // ============ QUESTIONS TAB ============
+
+        // Render Questions index page
+        function renderIndex() {
+            if (filteredDocs.length === 0) {
+                questionsContent.innerHTML = '<div class="empty-state"><div class="empty-icon">📚</div><div>No documentation loaded</div></div>';
+                return;
+            }
+
+            const totalQuestions = filteredDocs.reduce((sum, c) => sum + c.topics.length, 0);
+
+            questionsContent.innerHTML = `
+                <div class="index-page">
+                    <div class="index-header">
+                        <h1 class="index-title">Kubernetes Questions</h1>
+                        <p class="index-subtitle">${totalQuestions} questions across ${filteredDocs.length} categories</p>
+                    </div>
+                    ${filteredDocs.map(category => `
+                        <div class="index-category">
+                            <div class="index-category-title">${escapeHtml(category.category)}</div>
+                            <div class="index-questions">
+                                ${category.topics.map((topic, i) => `
+                                    <a class="index-question" onclick="goToQuestion('${category.category}', ${i}); return false;">
+                                        ${getIndexBadge(topic.type)}
+                                        <span class="index-question-text">${escapeHtml(topic.question)}</span>
+                                        <svg class="index-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </a>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Navigate to a specific question
+        function goToQuestion(categoryName, topicIndex) {
+            currentView = 'docs';
+            filteredDocs = docsData;
+            renderSidebar();
+            renderDocs('');
+            
+            // Scroll to and expand the question
+            setTimeout(() => {
+                const el = document.getElementById(`${categoryName}-${topicIndex}`);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    el.classList.add('expanded');
+                }
+            }, 50);
+        }
+
+        // Back to index
+        function backToIndex() {
+            currentView = 'index';
+            searchInput.value = '';
+            filteredDocs = docsData;
+            renderSidebar();
+            renderIndex();
+        }
+
+        // Render docs
+        function renderDocs(highlightQuery = '') {
+            if (filteredDocs.length === 0) {
+                questionsContent.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div>No results found</div></div>';
+                return;
+            }
+
+            const totalQuestions = filteredDocs.reduce((sum, c) => sum + c.topics.length, 0);
+            const backBtn = `<button onclick="backToIndex()" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; margin-bottom: 1.5rem;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                Back to Index
+            </button>`;
+            
+            const resultsInfo = highlightQuery 
+                ? `<div class="results-info">Found ${totalQuestions} questions matching "${escapeHtml(highlightQuery)}"</div>`
+                : '';
+
+            questionsContent.innerHTML = backBtn + resultsInfo + filteredDocs.map(category => `
+                <section class="category-section">
+                    <h2 class="category-title">${escapeHtml(category.category)}</h2>
+                    ${category.topics.map((topic, i) => `
+                        <article class="question-card" id="${category.category}-${i}">
+                            <div class="question-header" onclick="toggleCard(this)">
+                                <div>
+                                    ${getTypeBadge(topic.type)}
+                                    <h3 class="question-title">${highlightText(escapeHtml(topic.question), highlightQuery)}</h3>
+                                </div>
+                                <svg class="toggle-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                            <div class="answer-content">
+                                <div class="answer-summary">${highlightText(escapeHtml(topic.answer), highlightQuery)}</div>
+                                ${topic.details ? `<div class="answer-details">${highlightText(parseMarkdown(topic.details), highlightQuery)}</div>` : ''}
+                                ${topic.source ? `
+                                    <div class="source-link">
+                                        <a href="${escapeHtml(topic.source)}" target="_blank" rel="noopener">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                                <polyline points="15 3 21 3 21 9"></polyline>
+                                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                                            </svg>
+                                            View source
+                                        </a>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </article>
+                    `).join('')}
+                </section>
+            `).join('');
+        }
+
+        function toggleCard(header) {
+            header.closest('.question-card').classList.toggle('expanded');
+        }
+
+        // Utilities
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function truncate(text, len) {
+            return text.length > len ? text.substring(0, len) + '...' : text;
+        }
+
+        function highlightText(text, query) {
+            if (!query) return text;
+            const parts = text.split(/(<[^>]+>)/);
+            return parts.map(part => {
+                if (part.startsWith('<')) return part;
+                const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                return part.replace(regex, '<mark>$1</mark>');
+            }).join('');
+        }
+
+        // Markdown parser
+        function parseMarkdown(text) {
+            if (!text) return '';
+            
+            // Escape HTML first
+            text = text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+            
+            // Handle tables
+            text = text.replace(/((?:^\|.+\|$\n?)+)/gm, (tableBlock) => {
+                const rows = tableBlock.trim().split('\n');
+                let tableHtml = '<table style="width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem;">';
+                let isHeader = true;
+                
+                rows.forEach((row, index) => {
+                    if (row.match(/^\|[\s\-:|]+\|$/)) {
+                        isHeader = false;
+                        return;
+                    }
+                    const cells = row.slice(1, -1).split('|').map(c => c.trim());
+                    const cellTag = isHeader && index === 0 ? 'th' : 'td';
+                    const style = cellTag === 'th' 
+                        ? 'style="text-align: left; padding: 0.5rem; border-bottom: 2px solid var(--border); color: var(--text-primary);"'
+                        : 'style="padding: 0.5rem; border-bottom: 1px solid var(--border);"';
+                    tableHtml += '<tr>' + cells.map(c => `<${cellTag} ${style}>${c}</${cellTag}>`).join('') + '</tr>';
+                });
+                
+                tableHtml += '</table>';
+                return tableHtml;
+            });
+            
+            return text
+                // Code blocks
+                .replace(/```(\w*)\n([\s\S]*?)```/g, (m, lang, code) => {
+                    const id = 'code-' + Math.random().toString(36).substr(2, 9);
+                    const originalCode = code.trim();
+                    let highlighted = originalCode;
+                    if (lang === 'yaml' || lang === 'yml') {
+                        highlighted = highlightYaml(highlighted);
+                    }
+                    // Store original code in a data attribute for copying
+                    return `<div class="code-block"><div class="code-header"><span class="code-lang">${lang || 'code'}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><div class="code-content" id="${id}" data-code="${encodeURIComponent(originalCode)}">${highlighted}</div></div>`;
+                })
+                // Inline code
+                .replace(/`([^`]+)`/g, '<code style="background: var(--bg-secondary); padding: 0.15em 0.4em; border-radius: 4px; font-family: JetBrains Mono, monospace; font-size: 0.85em;">$1</code>')
+                // Custom image tags
+                .replace(/&lt;image\s+src=["']([^"']+)["']\s*&gt;&lt;\/image&gt;/g, '<div class="note-image"><img src="$1" alt="Diagram" loading="lazy" style="max-width: 100%; border-radius: 8px; margin: 1rem 0;"></div>')
+                // Markdown images
+                .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<div class="note-image"><img src="$2" alt="$1" loading="lazy" style="max-width: 100%; border-radius: 8px; margin: 1rem 0;"></div>')
+                // Headers
+                .replace(/^\*\*([^*]+)\*\*$/gm, '<h4>$1</h4>')
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^#### (.+)$/gm, '<h4>$1</h4>')
+                // Bold
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                // Italic
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                // Lists
+                .replace(/^- (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+                // Links
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" style="color: var(--accent);">$1</a>')
+                // Paragraphs
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>');
+        }
+
+        function highlightYaml(code) {
+            return code
+                .replace(/^(\s*)([a-zA-Z0-9_-]+)(:)/gm, '$1<span class="yaml-key">$2</span>$3')
+                .replace(/: (["\'][^"\']*["\'])/g, ': <span class="yaml-string">$1</span>')
+                .replace(/: (\d+)/g, ': <span class="yaml-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="yaml-boolean">$1</span>')
+                .replace(/(#.*)$/gm, '<span class="yaml-comment">$1</span>');
+        }
+
+        function copyCode(btn) {
+            const codeContent = btn.closest('.code-block').querySelector('.code-content');
+            const originalCode = decodeURIComponent(codeContent.dataset.code);
+            navigator.clipboard.writeText(originalCode).then(() => {
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+
+        // Theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            const theme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+
+        // Font
+        const fonts = {
+            'inter': "'Inter', sans-serif",
+            'roboto': "'Roboto', sans-serif",
+            'open-sans': "'Open Sans', sans-serif",
+            'lato': "'Lato', sans-serif",
+            'poppins': "'Poppins', sans-serif",
+            'nunito': "'Nunito', sans-serif",
+            'quicksand': "'Quicksand', sans-serif"
+        };
+
+        function changeFont(key) {
+            document.body.style.fontFamily = fonts[key];
+            localStorage.setItem('font', key);
+        }
+
+        // Load preferences
+        (function() {
+            const theme = localStorage.getItem('theme');
+            if (theme) document.documentElement.setAttribute('data-theme', theme);
+            
+            const font = localStorage.getItem('font');
+            if (font) {
+                document.getElementById('font-select').value = font;
+                changeFont(font);
+            }
+        })();
+    </script>
+</body>
+</html>
