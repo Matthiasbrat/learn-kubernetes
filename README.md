@@ -4,7 +4,7 @@ A comprehensive documentation browser for learning Kubernetes from 0 to 100.
 
 ## 🚀 Live Demo
 
-[Browse the Documentation](https://matthiasbrat.github.io/kubernetes-docs-extract/)
+[Browse the Documentation](https://matthiasbrat.github.io/learn-kubernetes/)
 
 ## ✨ Features
 
